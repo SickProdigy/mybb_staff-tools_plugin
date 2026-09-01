@@ -20,4 +20,4 @@ Test this initial release on staging before production use. Uninstalling removes
 
 ## License
 
-MIT
+Copyright (C) 2026 SickProdigy. Licensed under [GPL-3.0-only](LICENSE).

@@ -1,8 +1,8 @@
 <?php
 /**
  * MyBB Staff Tools
- * Copyright (c) 2026 sickprodigy
- * SPDX-License-Identifier: MIT
+ * Copyright (c) 2026 SickProdigy
+ * SPDX-License-Identifier: GPL-3.0-only
  */
 if (!defined('IN_MYBB')) {
     die('Direct initialization of this file is not allowed.');
@@ -17,10 +17,11 @@ function staff_tools_info()
         'name' => 'Staff Tools',
         'description' => 'ModCP recent-post review and AdminCP quality-of-life tools.',
         'website' => 'https://gitea.rcs1.top/sickprodigy/mybb_staff-tools_plugin',
-        'author' => 'sickprodigy',
+        'author' => 'SickProdigy',
         'version' => '0.1.0',
         'compatibility' => '18*',
-        'codename' => 'staff_tools'
+        'codename' => 'staff_tools',
+        'license' => 'GPL-3.0-only'
     );
 }
 
