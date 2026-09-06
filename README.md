@@ -11,7 +11,7 @@ Modular quality-of-life tools for MyBB administrators and moderators.
 
 Requires MyBB 1.8.x and PHP 7.4 or newer.
 
-1. Copy `inc/plugins/staff_tools.php` to the same path under your forum root.
+1. Copy the contents of `Upload/` to your forum root.
 2. Open **AdminCP → Configuration → Plugins**.
 3. Install and activate **Staff Tools**.
 4. Review **Configuration → Settings → Staff Tools**.

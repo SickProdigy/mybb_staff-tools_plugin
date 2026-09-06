@@ -18,7 +18,7 @@ function staff_tools_info()
         'description' => 'ModCP recent-post review and AdminCP quality-of-life tools.',
         'website' => 'https://gitea.rcs1.top/sickprodigy/mybb_staff-tools_plugin',
         'author' => 'SickProdigy',
-        'version' => '0.1.0',
+        'version' => '0.2.0',
         'compatibility' => '18*',
         'codename' => 'staff_tools',
         'license' => 'GPL-3.0-only'
