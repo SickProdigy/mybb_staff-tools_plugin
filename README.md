@@ -5,7 +5,6 @@ Modular quality-of-life tools for MyBB administrators and moderators.
 ## Features
 
 - **ModCP Recent Posts:** a paginated review feed with configurable user/group exclusions and links to posts, profiles, and warning tools.
-- **AdminCP View Members:** shortcuts on the user-group list that open MyBB's existing user search filtered to the selected group.
 
 ## Installation
 

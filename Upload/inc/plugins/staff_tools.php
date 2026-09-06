@@ -9,16 +9,15 @@ if (!defined('IN_MYBB')) {
 }
 
 $plugins->add_hook('modcp_start', 'staff_tools_modcp');
-$plugins->add_hook('admin_page_output_footer', 'staff_tools_admin_group_links');
 
 function staff_tools_info()
 {
     return array(
         'name' => 'Staff Tools',
-        'description' => 'ModCP recent-post review and AdminCP quality-of-life tools.',
+        'description' => 'ModCP recent-post review tools.',
         'website' => 'https://gitea.rcs1.top/sickprodigy/mybb_staff-tools_plugin',
         'author' => 'SickProdigy',
-        'version' => '0.2.0',
+        'version' => '0.3.0',
         'compatibility' => '18*',
         'codename' => 'staff_tools',
         'license' => 'GPL-3.0-only'
@@ -48,8 +47,7 @@ function staff_tools_install()
         array('name' => 'staff_tools_recentposts', 'title' => 'Enable ModCP recent posts', 'description' => 'Show the review page to users with ModCP access.', 'optionscode' => 'yesno', 'value' => '1', 'disporder' => 1),
         array('name' => 'staff_tools_perpage', 'title' => 'Posts per page', 'description' => 'Posts displayed per review page (10-100).', 'optionscode' => 'numeric', 'value' => '25', 'disporder' => 2),
         array('name' => 'staff_tools_excluded_users', 'title' => 'Excluded user IDs', 'description' => 'Comma-separated IDs, such as bot accounts.', 'optionscode' => 'text', 'value' => '', 'disporder' => 3),
-        array('name' => 'staff_tools_excluded_groups', 'title' => 'Excluded group IDs', 'description' => 'Comma-separated primary or additional group IDs.', 'optionscode' => 'text', 'value' => '3,4,6', 'disporder' => 4),
-        array('name' => 'staff_tools_group_links', 'title' => 'Enable AdminCP group shortcuts', 'description' => 'Add View Members links to the user-group list.', 'optionscode' => 'yesno', 'value' => '1', 'disporder' => 5)
+        array('name' => 'staff_tools_excluded_groups', 'title' => 'Excluded group IDs', 'description' => 'Comma-separated primary or additional group IDs.', 'optionscode' => 'text', 'value' => '3,4,6', 'disporder' => 4)
     );
     foreach ($settings as $setting) {
         $setting['gid'] = $gid;
@@ -154,28 +152,4 @@ function staff_tools_modcp()
     eval('$pageOutput = "'.$templates->get('staff_tools_recentposts').'";');
     output_page($pageOutput);
     exit;
-}
-
-function staff_tools_admin_group_links()
-{
-    global $mybb;
-    if (empty($mybb->settings['staff_tools_group_links']) || $mybb->get_input('module') !== 'user-groups' || $mybb->get_input('action')) {
-        return;
-    }
-    echo <<<'HTML'
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('a[href*="module=user-groups"][href*="action=edit"][href*="gid="]').forEach(function (editLink) {
-        var match = editLink.href.match(/[?&]gid=(\d+)/);
-        if (!match || editLink.parentNode.querySelector('.staff-tools-members')) return;
-        var link = document.createElement('a');
-        link.className = 'staff-tools-members';
-        link.href = 'index.php?module=user-users&action=search&results=1&usergroup=' + match[1];
-        link.textContent = 'View Members';
-        link.style.marginLeft = '0.75em';
-        editLink.parentNode.appendChild(link);
-    });
-});
-</script>
-HTML;
 }
