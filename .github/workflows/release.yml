@@ -1,0 +1,40 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/validate.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Download validated archive
+        uses: actions/download-artifact@v4
+        with:
+          name: mybb-staff-tools
+          path: dist
+
+      - name: Create GitHub release or replace its archive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/*.zip --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/*.zip --verify-tag --generate-notes --title "Staff Tools $RELEASE_TAG"
+          fi
