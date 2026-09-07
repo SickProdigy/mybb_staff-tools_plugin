@@ -12,6 +12,10 @@ on:
         description: Optional release tag that must match the plugin version
         required: false
         type: string
+      checkout_ref:
+        description: Optional git ref to validate and package
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -21,9 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
+      CHECKOUT_REF_INPUT: ${{ inputs.checkout_ref }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Validate source, version, and archive
         shell: bash

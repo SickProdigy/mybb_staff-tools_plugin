@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing tag to publish, for example v1.0.0
+        required: true
+        type: string
 
 jobs:
   build:
@@ -11,7 +17,8 @@ jobs:
       contents: read
     uses: ./.github/workflows/validate.yml
     with:
-      release_tag: ${{ github.ref_name }}
+      release_tag: ${{ github.event.inputs.release_tag || github.ref_name }}
+      checkout_ref: ${{ github.event.inputs.release_tag || github.ref }}
 
   publish:
     needs: build
@@ -21,6 +28,8 @@ jobs:
     steps:
       - name: Check out tagged source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_tag || github.ref }}
 
       - name: Download validated archive
         uses: actions/download-artifact@v4
@@ -31,7 +40,7 @@ jobs:
       - name: Create GitHub release or replace its archive
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" dist/*.zip --clobber
