@@ -23,6 +23,27 @@ Requires MyBB 1.8.x and PHP 7.4 or newer.
 
 Test this release on staging before production use. Uninstalling removes this plugin's settings, templates, and staff-task table.
 
+## Settings
+
+Staff Tools settings live in **AdminCP -> Configuration -> Settings -> Staff Tools**.
+
+| Setting | Purpose | Default |
+| --- | --- | --- |
+| Modules: Recent Posts | Shows the Recent Posts review page in ModCP. | Yes |
+| Modules: New Member Watchlist | Shows the New Member Watchlist in ModCP. | Yes |
+| Modules: Duplicate Account Finder | Shows the Duplicate Account Finder in ModCP. Staff with IP Search permission can see matching IP values. | Yes |
+| Modules: Staff Task Queue | Shows the Staff Task Queue in ModCP. | Yes |
+| Modules: Staff Action Digest | Shows the Staff Action Digest in ModCP. | Yes |
+| Modules: ModCP Snapshot Panel | Shows the Staff Tools Snapshot panel on the ModCP home page. | Yes |
+| Review Feeds: Items Per Page | Controls the number of posts or results shown per page on review feeds. Values are clamped from 10 to 100. | 25 |
+| Review Feeds: Excluded User IDs | Comma-separated user IDs hidden from review feeds, such as bot or service accounts. | Empty |
+| Review Feeds: Excluded Group IDs | Comma-separated group IDs hidden from review feeds. Checks primary and additional groups. | 3,4,6 |
+| New Member Watchlist: Registration Age Window | Includes posts from users registered within this many days. | 14 |
+| New Member Watchlist: Low Post-Count Threshold | Includes posts from users with this many posts or fewer. | 10 |
+| Staff Task Queue: Assignable Group IDs | Comma-separated group IDs whose members appear in the task assignment dropdown. | 3,4,6 |
+| Staff Task Queue: Assignment PMs | Sends a private message when a task is assigned or reassigned to another staff member. | Yes |
+| Staff Action Digest: Lookback Days | Controls how many days of moderator-log activity are summarized. | 7 |
+
 ## Upgrade Notes
 
 Version 1.0.0 adds new module toggles, assignable staff group settings, templates, and a `staff_tools_tasks` table. Activating the plugin backfills missing release assets, task columns, and setting labels for existing installs without resetting saved setting values.
