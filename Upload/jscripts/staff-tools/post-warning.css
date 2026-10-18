@@ -1,0 +1,42 @@
+/* Theme authors may override these classes to match their moderation palette. */
+.staff-tools-post-warning {
+	margin: 1em 0 .65em;
+	padding: .55em .7em;
+	background: #2b1719;
+	border: 1px solid #9f454d;
+	border-radius: .25em;
+	box-shadow: inset 3px 0 #d45b65;
+	color: #ead7d9;
+}
+
+.staff-tools-post-warning-label {
+	display: block;
+	margin-bottom: .35em;
+	color: #ff9da5;
+}
+
+.staff-tools-post-warning-details {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .2em 1.1em;
+}
+
+.staff-tools-post-warning-details > span {
+	display: inline-block;
+}
+
+.staff-tools-post-warning-details b {
+	color: #f5c5c9;
+}
+
+.staff-tools-post-warning-link {
+	display: block;
+	margin-top: .35em;
+	color: #ffb0b7;
+}
+
+.staff-tools-post-warning-link:hover,
+.staff-tools-post-warning-link:focus {
+	color: #ffd5d9;
+}

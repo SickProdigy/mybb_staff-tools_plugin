@@ -11,6 +11,8 @@ if (!defined('IN_MYBB')) {
 $plugins->add_hook('modcp_nav', 'staff_tools_modcp_nav');
 $plugins->add_hook('modcp_start', 'staff_tools_modcp');
 $plugins->add_hook('modcp_end', 'staff_tools_modcp_home');
+$plugins->add_hook('postbit', 'staff_tools_postbit_warning_notice');
+$plugins->add_hook('pre_output_page', 'staff_tools_post_warning_styles');
 
 function staff_tools_info()
 {
@@ -20,7 +22,7 @@ function staff_tools_info()
         'website' => 'https://github.com/sickprodigy/mybb_staff-tools_plugin',
         'author' => 'SickProdigy',
         'authorsite' => 'https://www.sickgaming.net',
-        'version' => '1.0.1',
+        'version' => '1.1.0',
         'compatibility' => '18*',
         'codename' => 'staff_tools',
         'license' => 'GPL-3.0-only'
@@ -43,6 +45,7 @@ function staff_tools_settings()
         array('name' => 'staff_tools_tasks', 'title' => 'Modules: Staff Task Queue', 'description' => 'Show the Staff Task Queue in ModCP.', 'optionscode' => 'yesno', 'value' => '1', 'disporder' => 40),
         array('name' => 'staff_tools_digest', 'title' => 'Modules: Staff Action Digest', 'description' => 'Show the Staff Action Digest in ModCP.', 'optionscode' => 'yesno', 'value' => '1', 'disporder' => 50),
         array('name' => 'staff_tools_snapshot', 'title' => 'Modules: ModCP Snapshot Panel', 'description' => 'Show the Staff Tools Snapshot panel on the ModCP home page.', 'optionscode' => 'yesno', 'value' => '1', 'disporder' => 60),
+        array('name' => 'staff_tools_post_warning_notice', 'title' => 'Thread Posts: Existing Warning Notice', 'description' => 'Show users who can issue warnings when a non-revoked MyBB warning is already attached to a post.', 'optionscode' => 'yesno', 'value' => '1', 'disporder' => 70),
         array('name' => 'staff_tools_perpage', 'title' => 'Review Feeds: Items Per Page', 'description' => 'Number of posts or results shown per page on review feeds. Allowed range: 10-100.', 'optionscode' => 'numeric', 'value' => '25', 'disporder' => 110),
         array('name' => 'staff_tools_excluded_users', 'title' => 'Review Feeds: Excluded User IDs', 'description' => 'Comma-separated user IDs to hide from review feeds, such as bot or service accounts.', 'optionscode' => 'text', 'value' => '', 'disporder' => 120),
         array('name' => 'staff_tools_excluded_groups', 'title' => 'Review Feeds: Excluded Group IDs', 'description' => 'Comma-separated group IDs to hide from review feeds. Checks primary and additional groups.', 'optionscode' => 'text', 'value' => '3,4,6', 'disporder' => 130),
@@ -73,7 +76,7 @@ function staff_tools_uninstall()
         $db->delete_query('settinggroups', "gid={$gid}");
     }
 
-    $db->delete_query('templates', "title IN ('staff_tools_recentposts', 'staff_tools_page', 'staff_tools_recentposts_panel', 'staff_tools_home_panel')");
+    $db->delete_query('templates', "title IN ('staff_tools_recentposts', 'staff_tools_page', 'staff_tools_recentposts_panel', 'staff_tools_home_panel', 'staff_tools_post_warning')");
     if ($db->table_exists('staff_tools_tasks')) {
         $db->drop_table('staff_tools_tasks');
     }
@@ -233,10 +236,24 @@ HTML;
 <br />
 HTML;
 
+    $postWarning = <<<'HTML'
+<div class="staff-tools-post-warning smalltext">
+<strong class="staff-tools-post-warning-label">Warning recorded</strong>
+<span class="staff-tools-post-warning-details">
+<span><b>Warning used:</b> {$warning_title}</span>
+<span><b>Points:</b> {$warning_points_label}</span>
+<span><b>Current level:</b> {$warning_level}%</span>
+<span><b>Issued:</b> {$warning_date} by {$warning_issued_by}</span>
+</span>
+<a class="staff-tools-post-warning-link" href="{$warning_url}">View warning</a>
+</div>
+HTML;
+
     return array(
         'staff_tools_page' => $page,
         'staff_tools_recentposts_panel' => $recentpostsPanel,
-        'staff_tools_home_panel' => $homePanel
+        'staff_tools_home_panel' => $homePanel,
+        'staff_tools_post_warning' => $postWarning
     );
 }
 
@@ -351,7 +368,7 @@ function staff_tools_excerpt($message, $length = 260)
     return htmlspecialchars_uni($message);
 }
 
-function staff_tools_post_warning($pid)
+function staff_tools_get_post_warning($pid)
 {
     global $db;
 
@@ -373,7 +390,7 @@ function staff_tools_post_warning($pid)
         return false;
     }
 
-    $query = $db->query("SELECT w.wid,w.uid,w.pid,w.title,w.points,w.dateline,w.issuedby,w.expires,w.expired,u.username AS issuedby_username FROM ".TABLE_PREFIX."warnings w LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid=w.issuedby) WHERE w.pid={$pid} AND w.daterevoked=0 ORDER BY w.dateline DESC LIMIT 1");
+    $query = $db->query("SELECT w.wid,w.uid,w.tid,w.pid,w.title,w.points,w.dateline,w.issuedby,w.expires,w.expired,warningtype.title AS type_title,issuer.username AS issuedby_username,warned.warningpoints AS current_warning_points FROM ".TABLE_PREFIX."warnings w LEFT JOIN ".TABLE_PREFIX."warningtypes warningtype ON (warningtype.tid=w.tid) LEFT JOIN ".TABLE_PREFIX."users issuer ON (issuer.uid=w.issuedby) LEFT JOIN ".TABLE_PREFIX."users warned ON (warned.uid=w.uid) WHERE w.pid={$pid} AND w.daterevoked=0 ORDER BY w.dateline DESC LIMIT 1");
     $cache[$pid] = $db->fetch_array($query);
 
     return $cache[$pid];
@@ -381,7 +398,7 @@ function staff_tools_post_warning($pid)
 
 function staff_tools_post_warning_notice($pid, $includeLink = true)
 {
-    $warning = staff_tools_post_warning($pid);
+    $warning = staff_tools_get_post_warning($pid);
     if (!$warning) {
         return '';
     }
@@ -399,6 +416,69 @@ function staff_tools_post_warning_notice($pid, $includeLink = true)
     }
 
     return $notice;
+}
+
+function staff_tools_can_view_post_warning()
+{
+    global $mybb;
+
+    return !empty($mybb->user['uid']) && !empty($mybb->usergroup['canwarnusers']);
+}
+
+function staff_tools_warning_display_title(array $warning)
+{
+    $customTitle = trim((string) ($warning['title'] ?? ''));
+    $typeTitle = trim((string) ($warning['type_title'] ?? ''));
+
+    if ((int) ($warning['tid'] ?? 0) === 0) {
+        return $customTitle !== '' ? 'Custom warning &mdash; '.htmlspecialchars_uni($customTitle) : 'Custom warning';
+    }
+
+    $title = $typeTitle !== '' ? $typeTitle : $customTitle;
+    return $title !== '' ? htmlspecialchars_uni($title) : 'Warning type unavailable';
+}
+
+function staff_tools_postbit_warning_notice(&$post)
+{
+    global $mybb, $templates;
+
+    if (empty($mybb->settings['staff_tools_post_warning_notice']) || empty($post['pid'])
+        || !staff_tools_can_view_post_warning()) {
+        return;
+    }
+
+    $warning = staff_tools_get_post_warning((int) $post['pid']);
+    if (!$warning) {
+        return;
+    }
+
+    $warning_title = staff_tools_warning_display_title($warning);
+    $warning_points = (int) $warning['points'];
+    $warning_points_label = $warning_points === 1 ? '1 point' : $warning_points.' points';
+    $maximum_points = !empty($mybb->settings['maxwarningpoints']) ? (int) $mybb->settings['maxwarningpoints'] : 10;
+    $current_points = isset($warning['current_warning_points']) ? (int) $warning['current_warning_points'] : 0;
+    $warning_level = min(100, max(0, (int) round($current_points / max(1, $maximum_points) * 100)));
+    $warning_date = my_date('relative', (int) $warning['dateline']);
+    $issued_by_name = !empty($warning['issuedby_username']) ? $warning['issuedby_username'] : 'UID '.(int) $warning['issuedby'];
+    $warning_issued_by = !empty($warning['issuedby'])
+        ? build_profile_link(htmlspecialchars_uni($issued_by_name), (int) $warning['issuedby'])
+        : htmlspecialchars_uni($issued_by_name);
+    $warning_url = 'warnings.php?action=view&amp;wid='.(int) $warning['wid'];
+    eval('$notice = "'.$templates->get('staff_tools_post_warning').'";');
+    $post['signature'] = $notice.(isset($post['signature']) ? $post['signature'] : '');
+    $GLOBALS['staff_tools_post_warning_rendered'] = true;
+}
+
+function staff_tools_post_warning_styles(&$page)
+{
+    global $mybb;
+
+    if (empty($GLOBALS['staff_tools_post_warning_rendered'])) {
+        return;
+    }
+
+    $url = htmlspecialchars_uni(rtrim($mybb->asset_url, '/').'/jscripts/staff-tools/post-warning.css');
+    $page = str_replace('</head>', '<link rel="stylesheet" href="'.$url.'" />'."\n".'</head>', $page);
 }
 
 function staff_tools_post_rows($query)

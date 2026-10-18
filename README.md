@@ -10,6 +10,7 @@ Modular quality-of-life tools for MyBB administrators and moderators.
 - **Staff Task Queue:** create shared moderation tasks, assign them to staff by username from configured groups, notify assigned staff by PM, let staff claim tasks for themselves, let creators edit open tasks, view full task details, prioritize them, and mark claimed tasks done with an optional completion note. Admins can remove tasks without deleting the saved record.
 - **Staff Action Digest:** summarize recent moderator-log activity over a configurable lookback window.
 - **ModCP Snapshot:** adds a lightweight Staff Tools summary panel to the ModCP home page.
+- **Post Warning Notices:** tells any warning-capable user when a warning is already attached to a specific thread post, including the configured warning type or entered custom reason, points, current warning level, issuer, date, and a direct link above the post signature.
 - **AdminCP Toggles:** enable or disable each Staff Tools module, the snapshot panel, and task assignment PMs from **Configuration → Settings → Staff Tools**.
 
 ## Installation
@@ -35,6 +36,7 @@ Staff Tools settings live in **AdminCP -> Configuration -> Settings -> Staff Too
 | Modules: Staff Task Queue | Shows the Staff Task Queue in ModCP. | Yes |
 | Modules: Staff Action Digest | Shows the Staff Action Digest in ModCP. | Yes |
 | Modules: ModCP Snapshot Panel | Shows the Staff Tools Snapshot panel on the ModCP home page. | Yes |
+| Thread Posts: Existing Warning Notice | Shows users with the effective **Can issue warnings?** permission a notice above the signature on posts with a non-revoked post-specific warning. | Yes |
 | Review Feeds: Items Per Page | Controls the number of posts or results shown per page on review feeds. Values are clamped from 10 to 100. | 25 |
 | Review Feeds: Excluded User IDs | Comma-separated user IDs hidden from review feeds, such as bot or service accounts. | Empty |
 | Review Feeds: Excluded Group IDs | Comma-separated group IDs hidden from review feeds. Checks primary and additional groups. | 3,4,6 |
@@ -46,7 +48,7 @@ Staff Tools settings live in **AdminCP -> Configuration -> Settings -> Staff Too
 
 ## Upgrade Notes
 
-Version 1.0.1 adds warning notices in ModCP review feeds for posts that already have post-specific MyBB warnings, and standardizes plugin metadata links. Forum postbit notices are provided separately by Spam Preventer; Staff Tools does not add them. Activating the plugin updates templates and settings without resetting saved setting values.
+Version 1.1.0 moves thread-post warning notices into Staff Tools. Any logged-in user whose effective group permissions allow issuing warnings can see the notice above the post signature, including custom staff groups. Profile-only warnings do not trigger it, and the notice does not prevent issuing another warning. Activating the plugin adds the setting and template without resetting saved setting values.
 
 ## License
 

@@ -1,9 +1,16 @@
 # Changelog
 
+## 1.1.0 - 2026-10-18
+
+- Added an optional staff-only notice to thread posts that already have a post-specific MyBB warning.
+- Limited post notices to logged-in users whose effective group permissions allow them to issue warnings, including custom staff groups.
+- Placed the notice in the post content above the signature instead of in the narrow author-details column.
+- Included the configured warning type or entered custom warning reason, its point value, the member's current warning level, and the issuing staff member and date.
+- Added a customizable global template and a distinct red moderation-notice treatment.
+
 ## 1.0.1 - 2026-10-18
 
 - Added post-specific warning notices in Recent Posts and New Member Watchlist rows when a MyBB warning is already tied to that post.
-- Kept forum postbit notices out of Staff Tools; Spam Preventer provides that optional feature with customizable styling.
 - Changed the warning action label to "Warn again" when a post-specific warning already exists.
 - Standardized plugin metadata links for the public source repository and author site.
 
