@@ -4,7 +4,7 @@ Modular quality-of-life tools for MyBB administrators and moderators.
 
 ## Features
 
-- **ModCP Recent Posts:** a paginated review feed and home-panel preview with configurable user/group exclusions and links to posts, edit tools, profiles, and warning tools.
+- **ModCP Recent Posts:** a paginated review feed and home-panel preview with configurable user/group exclusions, links to posts/edit/profile/warning tools, and post-specific warning notices to avoid duplicate warnings.
 - **New Member Watchlist:** review recent posts from accounts inside a configurable registration-age window or below a configurable post-count threshold.
 - **Duplicate Account Finder:** look up a username or user ID and surface accounts sharing registration or last-known IP data. Staff with IP Search permission can see the matching IP values.
 - **Staff Task Queue:** create shared moderation tasks, assign them to staff by username from configured groups, notify assigned staff by PM, let staff claim tasks for themselves, let creators edit open tasks, view full task details, prioritize them, and mark claimed tasks done with an optional completion note. Admins can remove tasks without deleting the saved record.
@@ -46,7 +46,7 @@ Staff Tools settings live in **AdminCP -> Configuration -> Settings -> Staff Too
 
 ## Upgrade Notes
 
-Version 1.0.0 adds new module toggles, assignable staff group settings, templates, and a `staff_tools_tasks` table. Activating the plugin backfills missing release assets, task columns, and setting labels for existing installs without resetting saved setting values.
+Version 1.0.1 adds warning notices in ModCP review feeds for posts that already have post-specific MyBB warnings, and standardizes plugin metadata links. Forum postbit notices are provided separately by Spam Preventer; Staff Tools does not add them. Activating the plugin updates templates and settings without resetting saved setting values.
 
 ## License
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 - 2026-10-18
+
+- Added post-specific warning notices in Recent Posts and New Member Watchlist rows when a MyBB warning is already tied to that post.
+- Kept forum postbit notices out of Staff Tools; Spam Preventer provides that optional feature with customizable styling.
+- Changed the warning action label to "Warn again" when a post-specific warning already exists.
+- Standardized plugin metadata links for the public source repository and author site.
+
 ## 1.0.0 - 2026-09-07
 
 - Added New Member Watchlist for reviewing posts from recently registered or low-post-count users.

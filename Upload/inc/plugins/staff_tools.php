@@ -17,9 +17,10 @@ function staff_tools_info()
     return array(
         'name' => 'Staff Tools',
         'description' => 'ModCP review feeds, duplicate-account checks, staff tasks, and action digests.',
-        'website' => 'https://gitea.rcs1.top/sickprodigy/mybb_staff-tools_plugin',
+        'website' => 'https://github.com/sickprodigy/mybb_staff-tools_plugin',
         'author' => 'SickProdigy',
-        'version' => '1.0.0',
+        'authorsite' => 'https://www.sickgaming.net',
+        'version' => '1.0.1',
         'compatibility' => '18*',
         'codename' => 'staff_tools',
         'license' => 'GPL-3.0-only'
@@ -350,6 +351,56 @@ function staff_tools_excerpt($message, $length = 260)
     return htmlspecialchars_uni($message);
 }
 
+function staff_tools_post_warning($pid)
+{
+    global $db;
+
+    static $cache = array();
+
+    $pid = (int) $pid;
+    if ($pid <= 0) {
+        return false;
+    }
+    if (array_key_exists($pid, $cache)) {
+        return $cache[$pid];
+    }
+    if (!$db->table_exists('warnings')) {
+        $cache[$pid] = false;
+        return false;
+    }
+    if (method_exists($db, 'field_exists') && !$db->field_exists('pid', 'warnings')) {
+        $cache[$pid] = false;
+        return false;
+    }
+
+    $query = $db->query("SELECT w.wid,w.uid,w.pid,w.title,w.points,w.dateline,w.issuedby,w.expires,w.expired,u.username AS issuedby_username FROM ".TABLE_PREFIX."warnings w LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid=w.issuedby) WHERE w.pid={$pid} AND w.daterevoked=0 ORDER BY w.dateline DESC LIMIT 1");
+    $cache[$pid] = $db->fetch_array($query);
+
+    return $cache[$pid];
+}
+
+function staff_tools_post_warning_notice($pid, $includeLink = true)
+{
+    $warning = staff_tools_post_warning($pid);
+    if (!$warning) {
+        return '';
+    }
+
+    $issuedBy = !empty($warning['issuedby_username']) ? $warning['issuedby_username'] : 'UID '.$warning['issuedby'];
+    $issuedBy = !empty($warning['issuedby']) ? build_profile_link(htmlspecialchars_uni($issuedBy), $warning['issuedby']) : htmlspecialchars_uni($issuedBy);
+    $title = trim((string) $warning['title']);
+    $title = $title !== '' ? htmlspecialchars_uni($title) : 'warning';
+    $points = (int) $warning['points'];
+    $pointText = $points === 1 ? '1 point' : $points.' points';
+    $notice = '<span style="color:#a33;font-weight:bold">Warning recorded</span> '.my_date('relative', $warning['dateline']).' by '.$issuedBy.' for '.$title.' ('.$pointText.')';
+
+    if ($includeLink) {
+        $notice .= ' &middot; <a href="warnings.php?action=view&amp;wid='.(int) $warning['wid'].'">View warning</a>';
+    }
+
+    return $notice;
+}
+
 function staff_tools_post_rows($query)
 {
     global $db;
@@ -363,11 +414,17 @@ function staff_tools_post_rows($query)
         $postUrl = get_post_link($post['pid'], $post['tid']).'#pid'.$post['pid'];
         $editUrl = 'editpost.php?pid='.(int) $post['pid'];
         $authorLink = $post['uid'] ? build_profile_link($author, $post['uid']) : $author;
-        $warnLink = $post['uid'] ? ' &middot; <a href="warnings.php?action=warn&amp;uid='.(int) $post['uid'].'&amp;pid='.(int) $post['pid'].'">Warn user</a>' : '';
+        $warningNotice = staff_tools_post_warning_notice($post['pid']);
+        $warnLabel = $warningNotice !== '' ? 'Warn again' : 'Warn user';
+        $warnLink = $post['uid'] ? ' &middot; <a href="warnings.php?action=warn&amp;uid='.(int) $post['uid'].'&amp;pid='.(int) $post['pid'].'">'.$warnLabel.'</a>' : '';
         $meta = $authorLink.' &middot; '.$date.' &middot; <a href="'.$postUrl.'">View post</a> &middot; <a href="'.$editUrl.'">Edit post</a>'.$warnLink;
 
         if (isset($post['regdate'])) {
             $meta .= ' &middot; Registered '.my_date('relative', $post['regdate']).' &middot; '.(int) $post['postnum'].' posts';
+        }
+
+        if ($warningNotice !== '') {
+            $meta .= '<br />'.$warningNotice;
         }
 
         $rows .= '<tr><td class="trow1"><strong><a href="'.$postUrl.'">'.$subject.'</a></strong><br /><span class="smalltext">'.$meta.'</span><br /><span class="smalltext">'.$excerpt.'</span></td></tr>';
@@ -1130,6 +1187,7 @@ function staff_tools_modcp_home()
     if ($mybb->get_input('action') !== '') {
         return;
     }
+
 
     if (staff_tools_setting_enabled('staff_tools_recentposts')) {
         $staff_tools_rows = staff_tools_recent_posts_rows(5);
